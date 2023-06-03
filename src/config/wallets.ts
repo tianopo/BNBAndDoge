@@ -4,6 +4,7 @@ export const ChainId = {
   ETHEREUM: 1,
   BSC: 56,
   BSC_TESTNET: 97,
+  MUMBAI: 80001 
 };
 
 const supportedChainIds = Object.values(ChainId);

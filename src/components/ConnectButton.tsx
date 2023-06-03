@@ -16,7 +16,7 @@ import {
   ModalCloseButton,
 } from "@chakra-ui/react";
 import { useDisclosure, useToast } from "@chakra-ui/react";
-import { injected } from "../config/wallets";
+import { ChainId, injected } from "../config/wallets";
 import abi from "./abi.json";
 import { AbiItem } from "web3-utils";
 
@@ -26,7 +26,7 @@ declare global {
   }
 }
 
-export default function ConnectButton() {
+export const ConnectButton = () => {
   const { account, active, activate, library, deactivate } = useWeb3React();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [connected, setConnected] = useState<boolean>(false);
@@ -39,7 +39,7 @@ export default function ConnectButton() {
   const [gasLimit, setGasLimit] = useState<number>(0);
   const toast = useToast();
 
-  function handleConnectWallet() {
+  async function handleConnectWallet() {
     connected ? deactivate() : activate(injected);
     setConnected(!connected);
   }
@@ -163,18 +163,15 @@ export default function ConnectButton() {
     }
   }, [account, library]);
 
-  useEffect(() => {
-    active && valueload();
-  }, [account, active, valueload]);
 
-  return account ? (
+  return (
     <Box
       display="block"
       alignItems="center"
       background="white"
       borderRadius="xl"
       p="4"
-      width="300px"
+      width="365px"
     >
       <Box
         display="flex"
@@ -186,10 +183,7 @@ export default function ConnectButton() {
           Account:
         </Text>
         <Text color="#6A6A6A" fontWeight="medium">
-          {`${account.slice(0, 6)}...${account.slice(
-            account.length - 4,
-            account.length
-          )}`}
+          {}
         </Text>
       </Box>
       <Box
@@ -228,6 +222,9 @@ export default function ConnectButton() {
           BNB / BabyDoge
         </Text>
         <Switch size="md" value={mode} onChange={handleMode} />
+        <Text color="#6A6A6A" fontWeight="medium">
+          {balance}
+        </Text>
       </Box>
       <Box
         display="block"
@@ -272,6 +269,7 @@ export default function ConnectButton() {
           Send
         </Button>
       </Box>
+      {connected && (
       <Box display="flex" justifyContent="center" alignItems="center">
         <Button
           onClick={handleConnectWallet}
@@ -292,7 +290,30 @@ export default function ConnectButton() {
         >
           Disconnect Wallet
         </Button>
+      </Box>)}
+      {!connected && (
+      <Box bg="white" p="4" borderRadius="xl">
+        <Button
+          onClick={handleConnectWallet}
+          bg="#158DE8"
+          color="white"
+          fontWeight="medium"
+          borderRadius="xl"
+          border="1px solid transparent"
+          width="300px"
+          _hover={{
+            borderColor: "blue.700",
+            color: "gray.800",
+          }}
+          _active={{
+            backgroundColor: "blue.800",
+            borderColor: "blue.700",
+          }}
+        >
+          Connect Wallet
+        </Button>
       </Box>
+      )}
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -313,28 +334,6 @@ export default function ConnectButton() {
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </Box>
-  ) : (
-    <Box bg="white" p="4" borderRadius="xl">
-      <Button
-        onClick={handleConnectWallet}
-        bg="#158DE8"
-        color="white"
-        fontWeight="medium"
-        borderRadius="xl"
-        border="1px solid transparent"
-        width="300px"
-        _hover={{
-          borderColor: "blue.700",
-          color: "gray.800",
-        }}
-        _active={{
-          backgroundColor: "blue.800",
-          borderColor: "blue.700",
-        }}
-      >
-        Connect Wallet
-      </Button>
     </Box>
   );
 }

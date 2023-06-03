@@ -3,7 +3,7 @@ import { Web3Provider } from '@ethersproject/providers';
 import './App.css';
 import { ChakraProvider, extendTheme  } from "@chakra-ui/react";
 import Layout from "./components/Layout";
-import ConnectButton from './components/ConnectButton';
+import { ConnectButton } from './components/ConnectButton';
 
 function App() {
   function getLibrary(provider: any): Web3Provider {
